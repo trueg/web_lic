@@ -76,6 +76,10 @@ Vue.component('dialogManager', {
 		whatsNewDialog: () => import(
 			/* webpackChunkName: "whatsNewDialog" */
 			'./dialogs/whats_new.vue'
+		),
+		mergePartsDialog: () => import(
+			/* webpackChunkName: "mergePartsDialog" */
+			'./dialogs/merge_parts.vue'
 		)
 	},
 	data() {

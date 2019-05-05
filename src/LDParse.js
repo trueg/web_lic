@@ -1,6 +1,7 @@
 /* Web Lic - Copyright (C) 2018 Remi Gagne */
 
 let needLDConfig = true;
+let needMergePartList = true;
 const blackColor = {name: 'Black', color: '#05131D', edge: '#595959', alpha: 0};
 
 const api = {
@@ -78,6 +79,15 @@ const api = {
 		api.setColorTable(colors);
 		needLDConfig = false;
 		return colors;
+	},
+	mergePartLookupDict: {},
+	mergeableParts: {},
+	async loadMergePartList() {
+		const content = await fetch('static/merge_parts_list.json');
+		if (content && content.ok) {
+			api.mergePartLookupDict = JSON.parse(await content.text());
+			needMergePartList = false;
+		}
 	},
 
 	// key: filename, value: abstractPart content.
@@ -165,6 +175,21 @@ const api = {
 					}
 				});
 			});
+		},
+		mergeParts(model, mergeEntryName) {
+			// mergeEntry is name of merged part, like 'minifig_legs'
+			// iterate over model and all parts / sub-parts and steps -
+			// If step includes all sub-parts in mergeEntry,
+			// create a new abstract part called model_name+mergeEntry_name in partDictionary,
+			// add each concrete part matched in this step to that abstract part,
+			// add a new concrete part to the model named mergeEntry,
+			// then delete all matched sub-parts from the model / step
+			const subParts = api.mergePartLookupDict[mergeEntryName].map(el => el.filename);
+			for (let i = 0; i < model.parts.length; i++) {
+				const part = model.parts[i];
+				if (subParts.includes(part.filename)) {
+				}
+			}
 		},
 		get: {
 			// Return the total number of parts in this model, including parts in submodels
@@ -425,6 +450,16 @@ async function lineListToAbstractPart(fn, lineList, progressCallback) {
 	return abstractPart;
 }
 
+function handleMergeablePart(filename) {
+	Object.entries(api.mergePartLookupDict).forEach(([name, parts]) => {
+		for (let i = 0; i < parts.length; i++) {
+			if (filename === parts[i].filename) {
+				api.mergeableParts[filename] = {name, parts};
+			}
+		}
+	});
+}
+
 async function loadSubModels(lineList, progressCallback) {
 	const models = [];
 	let lastFileLine, i, partName;
@@ -463,6 +498,9 @@ async function loadPart(fn, content, progressCallback) {
 	if (needLDConfig) {
 		await api.loadLDConfig();
 	}
+	if (needMergePartList) {
+		await api.loadMergePartList();
+	}
 	if (fn && fn in api.partDictionary) {
 		return api.partDictionary[fn];
 	} else if (fn && fn in api.missingParts) {
@@ -496,6 +534,9 @@ async function loadPart(fn, content, progressCallback) {
 			api.missingParts[fn] = 1;
 			return null;  // No content, nothing to create
 		}
+
+		handleMergeablePart(fn);
+
 		if (progressCallback) {
 			progressCallback({stepCount: partCount});
 		}

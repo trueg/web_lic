@@ -1,0 +1,13 @@
+{
+	"minifig_legs": [
+		{"name": "hips", "filename": "3815.dat"},
+		{"name": "right_leg", "filename": "3816.dat"},
+		{"name": "left_leg", "filename": "3817.dat"}
+	],
+	"minifig_torso": [
+		{"name": "torso", "filename": "973ps1.dat"},
+		{"name": "right_arm", "filename": "3818.dat"},
+		{"name": "left_arm", "filename": "3819.dat"},
+		{"name": "hand", "filename": "3820.dat"}
+	]
+}

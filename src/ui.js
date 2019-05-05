@@ -104,6 +104,10 @@ const app = new Vue({
 				await DialogManager('missingPartsDialog');
 			}
 
+			if (!_.isEmpty(LDParse.mergeableParts)) {
+				await DialogManager('mergePartsDialog');
+			}
+
 			DialogManager('importModelDialog', dialog => {
 				if (_.isEmpty(model.steps)) {
 					const partCount = LDParse.model.get.partCount(model);
@@ -473,7 +477,7 @@ const app = new Vue({
 			return _.version.nice(packageInfo.version);  // major.minor is enough for public consumption
 		}
 	},
-	mounted() {
+	async mounted() {
 
 		// TODO: grey out progress bar when 'Model Import' dialog is visible; otherwise it's confusing
 		//		 if progress bar isn't at 100 but its done loading and waiting for user to click
@@ -532,7 +536,7 @@ const app = new Vue({
 		});
 
 		if (_.version.isOldVersion(uiState.get('lastUsedVersion'), packageInfo.version)) {
-			DialogManager('whatsNewDialog');
+			await DialogManager('whatsNewDialog');
 		}
 
 		// TODO: Find better way of calling 'redrawUI' from arbitrary places
